@@ -1,24 +1,43 @@
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
-from pybricks.parameters import Port, Stop, Direction, Button, Color
-from pybricks.tools import wait, StopWatch, DataLog
-from pybricks.robotics import DriveBase
-from pybricks.media.ev3dev import SoundFile, ImageFile
+from pybricks.ev3devices import Motor, ColorSensor, TouchSensor
+from pybricks.parameters import Port, Button, Color, Direction
+from pybricks.media.ev3dev import Image, ImageFile, SoundFile
+from pybricks.tools import wait, StopWatch
 
-ev3 = EV3Brick()
+class Step_counter:
+    def __init__(self, speed=0, distance=0, wheel_diameter=55.5, axle_track=104):
+        self.speed = speed
+        self.distance = distance
 
-m_left= Motor(Port.B)
-m_right = Motor(Port.C)
+        self.ev3 = EV3Brick()
 
-robot = DriveBase(m_left, m_right, wheel_diameter=55.5, axle_track=104)
+        self.left_motor, self.right_motor = Motor(Port.B), Motor(Port.C)
+        self.robot = DriveBase(self.left_motor, self.right_motor, wheel_diameter, axle_track)
 
-time = 20000
-robot.drive(1000, 0)
-wait(time)
-robot.drive(100000000000000000000, 0)
-wait(time)
+    def advance(self):
+        self.robot.straight(distance * 0.8)
+        self.settings(speed)
+        self.robot.straight(distance * 0.2)
+        self.stop()
+
+        #reset settings
+        self.settings(100)
+    
+    def retreave(self):
+        self.settings(100, 20)
+        self.robot.drive(distance * -0.1)
+        self.wait(1000)
+        self.stop()
+
+        #reset settings
+        self.settings(100, 0)
+
+    def run(self):
+        self.advance()
+        self.retreave()
 
 
-ev3.speaker.beep()
+if __name__ == '__main__':
+    bot = Step_counter(speed=100, distance=200)
+    bot.run()
