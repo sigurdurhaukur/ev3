@@ -53,7 +53,7 @@ class Line_follow:
 
     def follow(self):
 
-        motor_speedlog = Datalog('error', 'integral', 'derivative', 'turn_rate', name='motor_speedlog')
+        motor_speedlog = DataLog('error', 'integral', 'derivative', 'turn_rate', name='motor_speedlog', timestamp=True, extension='txt')
         black = 3
         white = 62
         threshold = (black + white) / 2
@@ -83,5 +83,8 @@ class Line_follow:
         self.follow()
 
 if __name__ == '__main__':
+    bot = Line_follow()
+    bot.run()
+
     bot = Step_counter(speed=100, distance=200)
     bot.run()
