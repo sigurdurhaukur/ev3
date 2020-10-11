@@ -9,6 +9,8 @@ class Step_counter:
     def __init__(self, speed=0, distance=0, wheel_diameter=55.5, axle_track=104):
         self.speed = speed
         self.distance = distance
+        self.wheel_diameter = wheel_diameter
+        self.axle_track = axle_track
 
         self.ev3 = EV3Brick()
 
@@ -37,6 +39,48 @@ class Step_counter:
         self.advance()
         self.retreave()
 
+class Line_follow:
+    def __init__(self, duration=0, wheel_diameter=55.5, axle_track=104):
+        self.duration = duration
+        self.wheel_diameter = wheel_diameter
+        self.axle_track = axle_track
+
+        self.ev3 = EV3Brick()
+
+        self.left_motor, self.right_motor = Motor(Port.B), Motor(Port.C)
+        self.line_sensor = ColorSensor(Port.S3)
+        self.robot = DriveBase(self.left_motor, self.right_motor, wheel_diameter, axle_track)
+
+    def follow(self):
+
+        motor_speedlog = Datalog('error', 'integral', 'derivative', 'turn_rate', name='motor_speedlog')
+        black = 3
+        white = 62
+        threshold = (black + white) / 2
+        DRIVE_SPEED = 200
+
+        PROPORTIONAL_GAIN = 4.2
+        INTEGRAL_GAIN = 0.008
+        DERIVATIVE_GAIN = 0.01
+        integral = 0
+        derivative = 0
+        last_error = 0
+
+        while True:
+            error = line_sensor.reflection() - threshold
+            integral = integral + error
+            derivative = error - last_error
+
+            turn_rate = PROPORTIONAL_GAIN * error + INTEGRAL_GAIN + DERIVATIVE_GAIN + integral + DERIVATIVE_GAIN * derivative
+            motor_speedlog.log(error, integral, derivative, turn_rate)
+
+            self.left_motor.run(DRIVE_SPEED + turn_rate)
+            self.right_motor.run(DRIVE_SPEED - turn_rate)
+
+            last_error = error
+            wait(10)
+    def run(self):
+        self.follow()
 
 if __name__ == '__main__':
     bot = Step_counter(speed=100, distance=200)
